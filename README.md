@@ -114,17 +114,26 @@ pytest
 
 ## Known gaps
 
-- **I could not run `docker compose up` myself** — Docker isn't installed in
-  the machine I built this on. I instead installed PostgreSQL 16 and Redis
-  locally via Homebrew and ran the full app (dev server, Celery worker,
-  Celery beat, and the full pytest suite including the real-threaded
-  concurrency test) against them directly — everything in this README's
-  "without Docker" section is something I actually ran and verified, not
-  just written. The `Dockerfile`/`docker-compose.yml` are standard for this
-  stack and I checked the compose file's YAML/anchor resolution and cross-
-  referenced every environment variable name against `config/settings.py`
-  by hand, but **please run `docker compose up` end-to-end once before
-  submitting** to confirm the container build itself is clean.
+- **`docker compose up` has now been run and verified end-to-end**
+  (Docker wasn't installed on the machine I originally built this on; it
+  is now). From a fully clean state (`docker compose down -v`, no cached
+  volumes) I ran `docker compose up -d --build`, then `migrate`, then
+  `seed_demo_data`, and confirmed: all 5 containers healthy, the API
+  reachable on `:8000` with correct responses from `/health/`,
+  `/reports/overdue/` and `/employees/{code}/summary/` against the seeded
+  data, the Celery worker consuming `flag_overdue_checkouts` from Redis
+  with confirmed idempotency, and `pytest` passing 19/19 **inside the web
+  container** against the containerized Postgres.
+  - One real bug this caught: `celery-beat` and `celery-worker` had no
+    `restart` policy, so on a truly fresh volume `celery-beat` starts
+    before `migrate` has run, queries a table that doesn't exist yet
+    (`django_celery_beat_crontabschedule`), and exits — and without a
+    restart policy it would just stay dead. Fixed by adding
+    `restart: unless-stopped` to `web`, `celery-worker` and `celery-beat`
+    in `docker-compose.yml`; verified the fix by tearing everything down
+    (`docker compose down -v`) and re-running the exact command sequence
+    below from scratch — `celery-beat` now retries automatically and
+    comes up clean once `migrate` completes, with no manual restart.
 - **No GitHub Actions workflow file is checked in.** Part D3 describes the
   CI/CD pipeline I'd set up in prose; I didn't add an actual
   `.github/workflows/` file since it wasn't listed as a Part A deliverable
