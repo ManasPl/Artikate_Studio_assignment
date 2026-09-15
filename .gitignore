@@ -15,3 +15,6 @@ htmlcov/
 staticfiles/
 media/
 *.log
+
+# Confidential assignment doc — not for redistribution, kept local only.
+Artikate_Backend_Developer_Assignment.pdf
