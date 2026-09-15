@@ -5,6 +5,8 @@ Django settings for the Field Asset Check-Out Service.
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -143,3 +145,9 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BEAT_SCHEDULE = {
+    "flag-overdue-checkouts-hourly": {
+        "task": "checkouts.tasks.flag_overdue_checkouts",
+        "schedule": crontab(minute=0),
+    },
+}
