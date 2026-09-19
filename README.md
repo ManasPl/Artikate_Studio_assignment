@@ -146,7 +146,6 @@ pytest
 
 ## Screen recording
 
-_Add your Loom (or other) link here before submitting — this needs to be
-recorded by whoever submits this, showing: bringing up the stack, running
-migrations + seed, exercising check-out/summary/overdue live, the test
-suite passing, and narrating one decision you're least sure about._
+https://drive.google.com/file/d/1zp6pv9oSCqzTbvZe8Os04e6VaiaFqlqP/view?usp=sharing
+
+
